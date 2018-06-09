@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Head -->
+
+<head>
+    <meta charset="UTF-8">
+    <title>五子棋</title>
+    <!-- css -->
+    <style type="text/css">
+        #container {
+            width: 531px;
+            height: 645px;
+            margin: 100px auto;
+            border: 1px solid blue;
+            background: url(/static/images/qipan.jpg) no-repeat;
+            padding-top: 0px;
+            padding-left: 5px;
+        }
+
+        td {
+            width: 40px;
+            height: 33px;
+            font-size: 0px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 525px;
+            height: 465px;
+        }
+    </style>
+    <!-- css ends -->
+    <!-- script -->
+    <script src="/static/js/jquery-1.12.4.min.js"></script>
+    <script src="/static/js/gobang.js"></script>
+    <!-- script ends -->
+</head>
+<!-- Head Ends -->
+<!-- Body -->
+
+<body>
+    <!-- Container -->
+    <div id="container">
+        <table class="tab" id="chess_table">
+        </table>
+
+        <!-- 控件模块 -->
+        <br>
+        <div>
+            <p>&nbsp;当前棋手：
+                <img id="qizi" src="">
+                <input type="button" value="手执黑棋" onclick="status1()">
+                <input type="button" value="手执白棋" onclick="status2()">
+                <input type="button" value="再来一局" onclick="window.location.href=window.location">
+                <input type="button" value="退出游戏" onclick="closeFunction()">
+            </p>
+        </div>
+    </div>
+    <!-- Container Ends -->
+</body>
+<!-- Body Ends -->
+
+</html>
