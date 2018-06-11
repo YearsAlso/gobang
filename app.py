@@ -1,194 +1,140 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask import render_template
 from flask import request
+from room.Room import Room
+from room.AI import AI_Room
 
 import ai
 import json
+import random
+import time
 
 app = Flask(__name__)
-winner = 65536
-isAI = False
-
-ponsition = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-now_step = 0
-steps = [[]]
-
-list_player = [0, 0]
-Color = 1
+dict_room = {}
 
 
-def sourceSum(i, j, n=0):
-    line_sum = sum(ponsition[i][j - 2:j + 3])
+@app.route('/rooms')
+def rooms():
+    global dict_room
+    list_req = []
+    for key, room in dict_room.items():
+        dict_req = {}
+        dict_req["id"] = key
+        dict_req['player'] = "%d / 2" % sum(room.list_player)
+        dict_req['room'] = "双人" if type(room).__name__ == "Room" else "AI"
+        dict_req["name"] = room.name
+        list_req.append(dict_req)
     
-    row_sum = ponsition[i][j] + ponsition[i + 1][j] + ponsition[i + 2][j] + ponsition[i - 1][j] + ponsition[i - 2][
-        j]
-    left_sum = ponsition[i][j] + ponsition[i + 1][j + 1] + ponsition[i + 2][j + 2] + ponsition[i - 1][j - 1] + \
-               ponsition[i - 2][j - 2]
-    right_sum = ponsition[i][j] + ponsition[i + 1][j - 1] + ponsition[i + 2][j - 2] + ponsition[i - 1][j + 1] + \
-                ponsition[i - 2][j + 2]
-    
-    return {0: [line_sum, row_sum, left_sum, right_sum], 1: line_sum, 2: row_sum, 3: left_sum, 4: right_sum}.get(n)
+    return jsonify(list_req)
 
 
-def isWinnerCore():
-    for i in range(2, 13):
-        for j in range(2, 13):
-            if ponsition[i][j] != 0:
-                line_sum = sum(ponsition[i][j - 2:j + 3])
-                if line_sum == 5:
-                    return 1
-                elif line_sum == -5:
-                    return -1
-                
-                row_sum = ponsition[i][j] + ponsition[i + 1][j] + ponsition[i + 2][j] + ponsition[i - 1][j] + \
-                          ponsition[i - 2][j]
-                if row_sum == 5:
-                    return 1
-                elif row_sum == -5:
-                    return -1
-                
-                left_sum = ponsition[i][j] + ponsition[i + 1][j + 1] + ponsition[i + 2][j + 2] + ponsition[i - 1][
-                    j - 1] + ponsition[i - 2][j - 2]
-                if left_sum == 5:
-                    return 1
-                elif left_sum == -5:
-                    return -1
-                
-                right_sum = ponsition[i][j] + ponsition[i + 1][j - 1] + ponsition[i + 2][j - 2] + ponsition[i - 1][
-                    j + 1] + ponsition[i - 2][j + 2]
-                if right_sum == 5:
-                    return 1
-                elif right_sum == -5:
-                    return -1
-    
-    return 0
+@app.route('/addRoom')
+def add_room():
+    # 新建一个普通房间
+    global dict_room
+    room_name = request.args.get("name")
+    room_type = int(request.args.get("type"))
+    t = time.time()
+    key = str(int(round(t * 1000)))
+    if room_type == 1:
+        dict_room[key] = Room(key, name=room_name)
+    elif room_type == 2:
+        dict_room[key] = AI_Room(key, name=room_name)
+    return jsonify({"key": key})
 
 
-def isWinner(iLine, iRow, iColor):
-    global Color, ponsition, list_player
-    if Color != iColor and isAI==False:
-        return 65536
-    if (ponsition[iLine][iRow] != 0):
-        return 65535
-    if sum(list_player) != 2 and isAI==False:
-        return 65534
-    ponsition[iLine][iRow] = iColor
-    Color = 1 if (Color == -1) else -1
-    return isWinnerCore()
+@app.route("/openRoom/<string:room_id>")
+def open_room(room_id):
+    room = None
+    if dict_room.get(room_id):
+        room = dict_room[room_id]
+        if room.isFull():
+            return "这个房间已经满了"
+    else:
+        return
+    if type(room).__name__ == "Room":
+        return render_template('gobang.html', key=room_id)
+    return render_template('gobangAI.html', key=room_id)
 
-
-@app.route('/')
-def index():
-    return render_template('gobang.html')
 
 @app.route('/AI')
 def AI():
-    global isAI,list_player
-    list_player[1] = 1
-    
-    #return render_template('index.html')
     return render_template('gobangAI.html')
 
 
-@app.route("/dromp")
-def dromp():
-    global now_step, steps, winner
+@app.route("/dromp/<string:room_id>")
+def dromp(room_id):
+    room = dict_room[room_id]
     line = int(request.args.get("line"))
     rows = int(request.args.get("row"))
     color = int(request.args.get("color"))
-    winner = isWinner(line, rows, color)
+    winner = room.isWinner(line, rows, color)
     if winner < 65534:
-        now_step += 1
-    steps.append([line, rows, color])
-    dict_req = {"winner": winner, "line": line, "rows": rows, "color": color, "step": now_step}
+        room.now_step += 1
+    room.steps.append([line, rows, color])
+    dict_req = {"winner": winner, "line": line, "rows": rows, "color": color, "step": room.now_step}
     return json.dumps(dict_req)
 
 
-@app.route("/drompAI")
-def drompAI():
-    global now_step, steps, winner,ponsition,isAI
-    isAI = True
+@app.route("/drompAI/<string:room_id>")
+def drompAI(room_id):
+    room = dict_room[room_id]
+    room.isAI = True
     line = int(request.args.get("line"))
     rows = int(request.args.get("row"))
     color = int(request.args.get("color"))
-    winner = isWinner(line, rows, color)
+    
+    winner = room.isWinner(line, rows, color)
     if winner >= 65534:
         winner = 0
     # steps.append([line, rows, color])
     dict_req = {"winner": winner, "line": [line], "rows": [rows]}
-    ai_list = ai.getBestMove(ponsition,color*-1)
+    ai_list = ai.getBestMove(room.ponsition, color * -1)
     dict_req["line"].append(ai_list[0])
     dict_req["rows"].append(ai_list[1])
-    if winner==0:
-        winner = isWinner(ai_list[0], ai_list[1], color*-1)
+    if winner == 0:
+        winner = room.isWinner(ai_list[0], ai_list[1], color * -1)
         dict_req["winner"] = winner
     return json.dumps(dict_req)
 
 
-@app.route("/player")
-def player():
-    global list_player
+@app.route("/player/<string:room_id>")
+def player(room_id):
+    global dict_room
+    room = dict_room[room_id]
     num = int(request.args.get("player"))
-    if list_player[num]:
+    if room.list_player[num]:
         return "NO"
-    list_player[num] = 1
+    room.list_player[num] = 1
     return "YES"
 
 
-@app.route("/step")
-def step():
-    global steps
+@app.route("/step/<string:room_id>")
+def step(room_id):
     cli_step = int(request.args.get("step"))
+    room = dict_room[room_id]
     req_step = {"change": 0}
-    if cli_step < now_step:
-        req_step['steps'] = steps[cli_step:]
+    if cli_step < room.now_step:
+        req_step['steps'] = room.steps[cli_step:]
         req_step["change"] = 1
-        req_step['winner'] = winner
+        req_step['winner'] = room.winner
     return json.dumps(req_step)
 
 
 # @app.route("/ready")
 # def ready():
 
-@app.route("/restart")
-def restart_game():
-    global winner, ponsition, now_step, steps, Color
-    winner = 65536
-    ponsition = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-    now_step = 0
-    steps = [[]]
-    Color = 1
+@app.route("/restart/<string:room_id>")
+def restart_game(room_id):
+    room = dict_room[room_id]
+    room.reload()
     return "开始打扫战场"
 
 
+@app.route("/")
+def index():
+    return render_template("/list.html")
+
+
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=8080,debug=True)
+    app.run(host="0.0.0.0", port=8080, debug=True)
