@@ -1,5 +1,6 @@
 var script=document.createElement("script");
 var istep = 0;
+var sKey;
 script.type="text/javascript";
 script.src="jquery-1.12.4.min.js";
 document.getElementsByTagName('head')[0].appendChild(script);
@@ -7,7 +8,7 @@ document.getElementsByTagName('head')[0].appendChild(script);
 iColor = 0;
 function status1() {
     $.ajax({
-        url:"/player",
+        url: "/player/" + sKey,
         data:{player:0},
         dataType:"text",
         type:"get",
@@ -28,7 +29,7 @@ function status1() {
 }
 function status2() {
     $.ajax({
-        url:"/player",
+        url: "/player/" + sKey,
         data:{player:1},
         dataType:"text",
         type:"get",
@@ -65,7 +66,7 @@ var dromp=function (i, j) {
     }
     console.log(i+"-"+j);
     $.ajax({
-        url:"/dromp",
+        url: "/dromp/" + sKey,
         data:{line:i,row:j,color:iColor},
         type:"get",
         dataType:"json",
@@ -116,6 +117,7 @@ function td_click(i, j) {
 }
 
 window.onload = function () {
+    sKey = document.getElementById('RoomKey').innerText;
     var oTab = document.getElementById('chess_table');
     var i = 0, j = 0;
     var sTab = "";
@@ -132,7 +134,7 @@ window.onload = function () {
             return;
         }
         $.ajax({
-            url:"/step",
+            url: "/step/" + sKey,
             data:{step:istep},
             dataType:"json",
             type:"get",

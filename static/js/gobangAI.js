@@ -2,6 +2,7 @@ var script=document.createElement("script");
 var istep = 0;
 script.type="text/javascript";
 script.src="jquery-1.12.4.min.js";
+var sKey;
 document.getElementsByTagName('head')[0].appendChild(script);
 
 iColor = 0;
@@ -33,7 +34,7 @@ var dromp=function (i, j) {
     }
     console.log(i+"-"+j);
     $.ajax({
-        url:"/drompAI",
+        url:"/drompAI/"+sKey,
         data:{line:i,row:j,color:iColor},
         type:"get",
         dataType:"json",
@@ -83,9 +84,11 @@ function td_click(i, j) {
         oTd = document.getElementById("L" + i + "R" + j);
         dromp.call(oTd, i, j);
     }
+   
 }
 
 window.onload = function () {
+    sKey = document.getElementById('RoomKey').innerText;
     var oTab = document.getElementById('chess_table');
     var i = 0, j = 0;
     var sTab = "";
