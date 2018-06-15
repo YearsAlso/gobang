@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>大翔五子棋</title>
+    <link rel="shortcut icon" href="/static/images/favicon.ico" >
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap-table.css">
+    <script src="/static/js/jquery-1.12.4.min.js"></script>
+    {#    <script src="/static/js/bootstrap.min.js"></script>#}
+    <script src="/static/js/bootstrap.js"></script>
+    <script src="/static/js/bootstrap-table.js"></script>
+    <script src="/static/js/bootstrap-table-zh-CN.js"></script>
+    <style>
+        .row {
+            margin: 100px
+        }
+
+    </style>
+    <script >
+        function closeme() {
+            var browserName = navigator.appName;
+            if (browserName == "Netscape") {
+                window.open('', '_parent', '');
+                window.close();
+            } else if (browserName == "Microsoft Internet Explorer") {
+                window.opener = "whocares";
+                window.close();
+            }
+        }
+
+        function fnOpenRoom() {
+            var oSelect = $('.table').bootstrapTable('getSelections');
+            if(oSelect.length == 1){
+                window.location.href = "/openRoom/" + oSelect[0].id;
+            }else { 
+                alert("请选中一行") ;
+                return;
+            }
+        }
+
+        function fnAddRoom() {
+            var sName = "";
+            sName = document.getElementById("name").value;
+            var oRadio1 = document.getElementById("optionsRadios1")
+            var oType = 1;
+            if(oRadio1.checked){
+                oType = 1;
+            }else{
+                oType = 2;
+            }
+            console.log(sName, oType);
+            $.ajax({
+                data: {
+                    name: sName,
+                    type: oType
+                },
+                dataType: "json",
+                url: "/addRoom",
+                type: "get",
+                success: function (dat) {
+                    window.location.href = "/openRoom/"+ dat["key"]; 
+                }, error: function (o, e) {
+                    alert(e);
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<div class="row">
+    <div class="btn-group hidden-xs" id="exampleTableEventsToolbar" role="group">
+        <button type="button" class="btn btn-outline btn-default" data-toggle="modal" data-target="#myModal">
+            <i class="glyphicon glyphicon-plus" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="btn btn-outline btn-default" onclick="fnOpenRoom()">
+            <i class="glyphicon glyphicon-flag" aria-hidden="true"></i>
+        </button>
+    </div>
+    <table data-toggle="table" data-url="/rooms" data-show-refresh="true" data-show-toggle="true"
+           data-show-columns="true"
+           data-search="true" data-select-item-name="toolbar1" data-pagination="true" data-sort-name="name"
+           data-sort-order="desc">
+        <thead>
+        <tr>
+            <th data-field="state" data-radio="true">Item ID</th>
+            <th data-field="id" data-sortable="true">房间 ID</th>
+            <th data-field="name" data-sortable="true">房间名称</th>
+            <th data-field="room" data-sortable="true">房间类型</th>
+            <th data-field="player" data-sortable="true">对战人数</th>
+        </tr>
+        </thead>
+    </table>
+
+    <!--/.row-->
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times</button>
+                    <h4 class="modal-title" id="myModalLabel">添加房间</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="name">房间名称</label>
+                        <input type="text" class="form-control" id="name" placeholder="请输入名称">
+                    </div>
+
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+                            双人
+                        </label>
+                    </div>
+                    <div class="radio">
+                        <label>
+                            <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+                            AI
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="fnAddRoom()">新建</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal -->
+    </div>
+</div>
+
+
+</body>
+
+</html>

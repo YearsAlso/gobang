@@ -1,31 +1,32 @@
 import random
 from room.Room import Room
+
+
 class AI_Room(Room):
-    def __init__(self,id,name="250号人工智障"):
-        super().__init__(id,name)
+    def __init__(self, id, name="250号人工智障"):
+        super().__init__(id, name)
         self.source_map = []
     
-    def initMap(self,):
+    def initSourceMap(self, ):
         self.source_map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-    
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
     
     def getBestMove(self, color):
-        self.initMap()
-        self.getALLSource(self.ponsition)
+        self.initSourceMap()
+        self.getALLSource(color)
         maxSource = 0
         list_max = []
         for i in range(15):
@@ -38,26 +39,22 @@ class AI_Room(Room):
                     elif maxSource == self.source_map[i][j]:
                         list_max.append([i, j])
         rand_num = random.randint(0, len(list_max) - 1)
-        # for value in self.source_map:
-        #     print(value)
+        for value in self.source_map:
+            print(value)
         return list_max[rand_num]
     
-    
-    def isLimit(self,line, row, x, y, i):
+    def isLimit(self, line, row, x, y, i):
         if (line + i * y) >= 0 and (row + i * x) >= 0 and (line + i * y) < 15 and (row + i * x) < 15:
             return True
         return False
     
-    
-    def aiUnDromp(self,line, row, color):
+    def aiUnDromp(self, line, row, color):
         self.ponsition[line][row] = color
     
-    
-    def aiDrimp(self,line, row, color):
+    def aiDrimp(self, line, row, color):
         self.ponsition[line][row] = 0
-
     
-    def getSource(self,empty_num, rob_num, man_num):
+    def getSource(self, empty_num, rob_num, man_num):
         source = 0
         if man_num == 1:
             source += 10
@@ -79,10 +76,8 @@ class AI_Room(Room):
             source += 12000
         elif man_num >= 5:
             source += 999999
-    
-        if rob_num == 0:
-            source += 5
-        elif rob_num == 1:
+        
+        if rob_num == 1:
             source += 10
         elif rob_num == 2:
             if empty_num:
@@ -100,8 +95,7 @@ class AI_Room(Room):
             source += 999999
         return source
     
-    
-    def getRevSource(self,old_color, x, y, line, row, ponsition):
+    def getRevSource(self, old_color, x, y, line, row, ponsition):
         """
         反向求参数
         :int old_color:
@@ -118,19 +112,18 @@ class AI_Room(Room):
             if ponsition[line - y * i][row - x * i] == old_color:
                 i += 1
             else:
-                if ponsition[line - y*i][row - x * i] == 0:
+                if ponsition[line - y * i][row - x * i] == 0:
                     e = 1
                 break
-        return [i-1, e]
-    
+        return [i - 1, e]
     
     def getALLSource(self, self_color=-1):
-        other_color = self_color*-1
+        other_color = self_color * -1
         for line in range(15):
             for row in range(15):
                 if self.ponsition[line][row] == 0:
-                    for x in range(-1, 2):
-                        for y in range(-1, 2):
+                    for x in [-1,0,1]:
+                        for y in [-1,0,1]:
                             empty_num = 0
                             rob_num = 0
                             man_num = 0
@@ -191,3 +184,4 @@ class AI_Room(Room):
                                         old_color = num
                                     else:
                                         break
+
