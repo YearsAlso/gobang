@@ -4,8 +4,9 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>五子棋</title>
+    <title>大翔五子棋</title>
     <!-- css -->
+    <link rel="shortcut icon" href="/static/images/favicon.ico" >
     <style type="text/css">
         #container {
             width: 531px;
@@ -30,6 +31,7 @@
         }
     </style>
     <!-- css ends -->
+
     <!-- script -->
     <script src="/static/js/jquery-1.12.4.min.js"></script>
     <script src="/static/js/gobangAI.js"></script>
@@ -60,7 +62,7 @@
     <script>
         function reload() {
             $.ajax({
-                url:"/restart",
+                url:"/restart/"+sKey,
                 type:"get",
                 dataType:"text",
                 success:function (dat) {
