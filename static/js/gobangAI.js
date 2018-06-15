@@ -7,12 +7,43 @@ document.getElementsByTagName('head')[0].appendChild(script);
 
 iColor = 0;
 function status1() {
-    iColor = 1;
-    document.getElementById('qizi').src = "/static/images/black.png";
+    $.ajax({
+        url: "/player/" + sKey,
+        data:{player:0},
+        dataType:"text",
+        type:"get",
+        success:function (data) {
+            console.log(data);
+            if(data=="YES"){
+                document.getElementById('qizi').src = "/static/images/black.png";
+                iColor = 1;
+                iswin = false;
+            }else{
+                alert("黑棋已经被占了");
+            }
+        },error:function (o,e) {
+            alert(e);
+        }
+    })
 }
 function status2() {
-    iColor = -1;
-    document.getElementById('qizi').src = "/static/images/white.png";
+    $.ajax({
+        url: "/player/" + sKey,
+        data:{player:1},
+        dataType:"text",
+        type:"get",
+        success:function (data) {
+            if(data=="YES"){
+                document.getElementById('qizi').src = "/static/images/white.png";
+                iColor = -1;
+                iswin = false;
+            }else{
+                alert("白棋已经被占了");
+            }
+        },error:function (o,e) {
+            alert(e);
+        }
+    })
 }
 
 /* 控件事件 */
