@@ -1,6 +1,7 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify,session,flash
 from flask import render_template
 from flask import request
+from flask_sqlalchemy import SQLAlchemy
 from room.Room import Room
 from room.AI import AI_Room
 
@@ -11,6 +12,19 @@ import time
 
 app = Flask(__name__)
 dict_room = {}
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://qt123:qq1334713380@localhost:3306/gobang"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["SECRET_KEY"] = "dhiuqheiuqwheqasd"
+db = SQLAlchemy(app)
+
+
+class User(db.Model):
+    __tablename__ = "user"
+    id = db.Column(db.Integer,primary_key=True)
+    username = db.Column(db.String(128),unique=True)
+    password = db.Column(db.String(128),unique=True)
+    sources = db.Column(db.Integer,unique=True)
+    
 
 
 @app.route('/rooms')
@@ -89,7 +103,8 @@ def drompAI(room_id):
         winner = 0
     # steps.append([line, rows, color])
     dict_req = {"winner": winner, "line": [line], "rows": [rows]}
-    ai_list = ai.getBestMove(room.ponsition, color * -1)
+    ai_list = room.getBestMove( color * -1)
+    #ai_list = ai.getBestMove(room.ponsition, color * -1)
     dict_req["line"].append(ai_list[0])
     dict_req["rows"].append(ai_list[1])
     if winner == 0:
@@ -106,6 +121,8 @@ def player(room_id):
     if room.list_player[num]:
         return "NO"
     room.list_player[num] = 1
+    if type(room).__name__ == "AI_Room":
+        room.list_player[num] = [1,1]
     return "YES"
 
 
@@ -133,8 +150,59 @@ def restart_game(room_id):
 
 @app.route("/")
 def index():
-    return render_template("/list.html")
+    return render_template("/login.html")
 
+@app.route('/login')
+def login():
+    dict_req = {'state':"No",'id':0}
+    username = request.args.get('username')
+    password = request.args.get("password")
+    remember = request.args.get('remember')
+
+    user = User.query.filter_by(username = username).first()
+    if user==None:
+        return jsonify(dict_req)
+    if user.password == password:
+        session['id'] = str(user.id)
+        dict_req["state"] = "YES"
+        dict_req["id"] = user.id
+    return jsonify(dict_req)
+    
+
+@app.route("/roomlist/<string:id>")
+def roomlist(id):
+    if session['id'] == id:
+        return render_template('/roomlist.html')
+    else:
+        flash("请登录后再进入")
+        return render_template("/login.html")
+
+
+
+@app.route("/register",methods=["GET","POST"])
+def register():
+    if request.method == "GET":
+        return render_template('register.html')
+    username = request.form.get('username')
+    password = request.form.get('password')
+    password2 = request.form.get('password2')
+    if not all([username,password,password2]):
+        return "NO"
+    if password2!=password:
+        return
+    if User.query.filter(User.username==username).count() != 0:
+        return "No"
+    user = User(username=username,password=password)
+    try:
+        db.session.add(user)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(e)
+        return "NO"
+    return "YES"
 
 if __name__ == '__main__':
+    # 创建所有的表
+    db.create_all()
     app.run(host="0.0.0.0", port=8080, debug=True)
